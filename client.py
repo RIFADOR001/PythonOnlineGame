@@ -19,7 +19,7 @@ class Player:
 		self.height = height
 		self.color = color
 		self.rect = (x, y, width, height)
-		self.vel = 10
+		self.vel = 1
 
 	def updateRectangle(self):
 		self.rect = (self.x, self.y, self.width, self.height)
@@ -66,7 +66,7 @@ def main():
 				print("quit")
 				run = False
 				pygame.quit()
-			p.move()
+		p.move()
 		redrawWindow(win, p)
 
 
