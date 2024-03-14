@@ -1,6 +1,8 @@
 import socket
 from _thread import *
 import sys
+from player import Player
+import pickle
 
 server = "192.168.1.235"
 # Port that is typically available
@@ -10,12 +12,6 @@ port = 5555
 # That is going to create a connection
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-def read_pos(s):
-	s = s.split(",")
-	return int(s[0]), int(s[1])
-
-def make_pos(tup):
-	return str(tup[0]) + "," + str(tup[1])
 
 try: 
 	s.bind((server, port))
@@ -27,34 +23,29 @@ except socket.error  as e:
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
+players = [Player(0, 0, 50, 50, (0, 255, 0)), Player(100, 100, 50, 50, (0, 0, 255))]
 
-pos = [(0, 0), (100, 100)]
 def threaded_client(conn, player):
-	conn.send(str.encode(make_pos(pos[player])))
+	conn.send(pickle.dumps(players[player]))
 	reply = ""
 	while True:
 		try:
 			# We state the amount of bits of information that we expect to get
-			rec = conn.recv(2048).decode()
-			# We verify if we still get recieve information
-			if not rec:
-				print("Player disconnected")
-				break
-			data = read_pos(rec)
-			pos[player] = data
+			data = pickle.loads(conn.recv(2048))
+			players[player] = data
 
 			if not data:
 				print("Disconnected")
 				break
 			else:
 				if player == 1:
-					reply = pos[0]
+					reply = players[0]
 				else:
-					reply = pos[1]
+					reply = players[1]
 				print("Recieved: ", data)
 				print("Sending: ", reply)
 
-			conn.sendall(str.encode(make_pos(reply)))
+			conn.sendall(pickle.dumps(reply))
 
 		except socket.error as e:
 			print("ERROR: ", e)
